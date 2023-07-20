@@ -1,107 +1,167 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IconButton, ThemeProvider, createTheme } from '@mui/material';
 import dayjs from 'dayjs';
-import { ChevronLeft, ChevronRight } from '@mui/icons-material';
-import { DemoContainer, DemoItem } from '@mui/x-date-pickers/internals/demo';
 
-import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
 
-import { KeyboardArrowUp, KeyboardArrowDown } from '@mui/icons-material';
-import { LocalizationProvider, DateAdapter } from '@mui/lab';
-import AdapterDayjs from '@mui/lab/AdapterDayjs';
-import { DatePicker } from '@mui/lab';
-import { subMonths, addMonths } from 'date-fns';
-import { Box, Input } from '@chakra-ui/react';
-import ResponsiveDatePickers from './makingcalender';
+import { DemoItem } from '@mui/x-date-pickers/internals/demo';
+
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+
+
+
+
+import { DatePicker } from '@mui/x-date-pickers/DatePicker'
+
+import { Box, Input, Text } from '@chakra-ui/react';
+
 const theme=createTheme()
-const commoncolor="gray.300"
-const month=["January","February","March","April","May","June","July","August","September","October","November","December"]
+const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+const today = new Date();
+const currentWeekName = weekdays[today.getDay()];
+const currentMonthName = months[today.getMonth()];
+const currentYear = today.getFullYear();
+
+
+const year = today.getFullYear();
+const month = String(today.getMonth() + 1).padStart(2, '0');
+const day = String(today.getDate()).padStart(2, '0');
+
+const currentDate = `${year}-${month}-${day}`;
+
+
+// slots array
+const slotsArray = [
+  { slot: '9:00 AM', tickets: 5 },
+  { slot: '9:30 AM', tickets: 5 },
+  { slot: '10:00 AM', tickets: 5 },
+  // ... and so on
+  { slot: '5:00 PM', tickets: 5 }
+];
+
+
+
 const Calenderdata= ({ value, onChange }) => {
-    const [inputvalue,setInputvalue]=useState(new Date())
-  const [selectedDate, setSelectedDate] = useState(month[new Date().getMonth()]);
+  const [maindate,setMaindate]=useState()
+  const [calendervalue,setCalendervalue]=useState(dayjs(currentDate))
+    // const [inputvalue,setInputvalue]=useState()
+
   const [changecount,setChangecount]=useState(new Date().getMonth())
   const [selectedyear,setSelectedyear]=useState(new Date().getFullYear())
-const handlechange=(e)=>{
-    
-  setChangecount((pre)=>pre==11?pre=0:pre+e)
-  setSelectedDate(month[changecount])
+const [date,setDate]=useState(maindate)
+
+
+
+
+const handleinputchange=(e)=>{
+console.log(e)
+//  let inputvalue=e.target.value
+// console.log(e)
+let myvalue=e.$d
+
+// let arr=myvalue.split()
+let weekname=weekdays[e.$W]
+let monthname=months[e.$M]
+let year=e.$y
+let newarr=[]
+newarr.push(weekname,monthname,year)
+setDate(newarr)
+
+
+  e.target?setMaindate(e.target.value):setMaindate(`${e.$y}-${Number(e.$M)<10?`0${e.$M}`:e.$M}-${e.$D<10?`0${e.$D}`:e.$D}`)
+
 
 }
-const handlechange2=(e)=>{
-    setChangecount((pre)=>pre==0?pre=11:pre+e)
-    setSelectedDate(month[changecount])
+console.log(date)
+useEffect(()=>{
+
+},[maindate])
+console.log(maindate)
+const handledate=()=>{
+
 }
-const handleyear=(e)=>{
-    setSelectedyear(selectedyear+e)
-}
-const handleinputchange=(e)=>{
-    
-}
+
+
+// tikets data (selecting tickets)
+
+const [data, setData] = useState(slotsArray);
+const [selectedSlot, setSelectedSlot] = useState(null);
+const [selectedTickets, setSelectedTickets] = useState(0);
+
+const handleTicketSelection = (slot, availableTickets) => {
+  setSelectedSlot(slot);
+  setSelectedTickets(availableTickets);
+};
+
+const handleDropdownChange = (event) => {
+  const selectedTicketCount = parseInt(event.target.value, 10);
+  setSelectedTickets(selectedTicketCount);
+
+  const updatedData = data.map((slotData) => {
+    if (slotData.slot === selectedSlot) {
+      return { ...slotData, tickets: slotData.tickets - selectedTicketCount };
+    }
+    return slotData;
+  });
+
+  setData(updatedData);
+};
+
+
+
+
+
   return (
     <ThemeProvider theme={theme}>
         
 
-        <Box mt="10px" display={["block","block","block","flex","flex"]} >
+        <Box mt="10px" display={["block","block","block","flex","flex"]} justifyContent={"space-between"}>
            
             <Box border={"1px solid gray"}  borderRadius="8px 8px 00px 00px" width={["100%","100%","100%","50%","50%"]}>
             <Box >
-    <Input defaultValue={inputvalue} h="50px" type="date" w="100%"  borderRadius="8px 8px 00px 00px" onChange={handleinputchange} />
-    <Box display={"flex"} justifyContent={"space-between"} >
-<Box border="1px solid gray" display={"flex"} w="50%" >
-<Box h="60px"  display={"flex"}  w="90%" justifyContent={"center"} alignItems={"center"}>{selectedDate}</Box>
-<Box  > <Box>
- <Box><KeyboardArrowUp mb="0px" onClick={()=>handlechange2(-1)}  /> </Box><Box> <KeyboardArrowDown mt="0px" onClick={()=>handlechange(1)} /></Box>
-       </Box>
-       </Box>
+  
+    {/* <ResponsiveDatePickers maindate={maindate} handleinputchange={handleinputchange} /> */}
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+    <DemoItem >
+  <DatePicker defaultValue={calendervalue} onChange={handleinputchange} />
+</DemoItem>
+    </LocalizationProvider>
 
-</Box>
-<Box>
 
-</Box>
-<Box w="50%" border="1px solid gray" display={"flex"}  >
-<Box h="60px"  w="90%" display={"flex"}  justifyContent={"center"} alignItems={"center"}>{selectedyear}</Box>
-<Box  > <Box>
- <Box ><KeyboardArrowUp mb="0px" onClick={()=>handleyear(-1)}  /> </Box><Box> <KeyboardArrowDown mt="0px" onClick={()=>handleyear(1)} /></Box>
-       </Box>
-       </Box>
-
-</Box>
-<Box>
-
-</Box>
-
-    </Box>
-    {/* <div style={{ display: 'flex', alignItems: 'center',border:"1px solid gray",width:"50%"}}>
-     <Box h="60px" border="1px solid gray" display={"flex"} alignItems={"center"}>{selectedDate}
-     <Box  display="block">
-     <Box >
-       <Box > <KeyboardArrowUp mb="0px" onClick={()=>handlechange2(-1)} display="block"/>
-       </Box>
-       </Box>
-     
-<Box  >
-        <KeyboardArrowDown mt="0px" onClick={()=>handlechange(1)} /></Box>
-        </Box>
-        <Box w="80%">{selectedyear}</Box>
-     <Box w="200px">
-       <Box > <KeyboardArrowUp mt="0px" onClick={()=>handleyear(-1)} display="block"/>
-      
-       </Box>
-       </Box>
-<Box>
-        <KeyboardArrowDown mt="0px" onClick={()=>handleyear(1)} /></Box>
-        </Box>
-    
-
-    </div> */}
-    <ResponsiveDatePickers />
     </Box>
     
     
     
     </Box>
-    <Box>
-        Hii
+    <Box  w="45%" >
+    <Box><Text fontSize={"18px"} fontWeight={600} textAlign={"left"}  >{typeof date!=="undefined"?`${date[0]},${date[1]}${date[2]}`:`${currentWeekName},${currentMonthName}${currentYear}`}</Text></Box>
+   
+   <Box mt="10px" overflow={"scroll"}  h="300px" display={"grid"} gridTemplateColumns={"repeat(2,1fr)" } gap="10px">
+    {slotsArray.length>=1&&slotsArray.map((item)=>
+    <Box borderRadius={"6px"} border="1px solid #1976d2"><Text color={"#1976d2"} fontSize={"15px"}>{item.slot}</Text>
+    <Text display={"block"} color={"pink.300"} fontSize={"12px"}
+    
+    onClick={() => handleTicketSelection(item.slot,item.tickets)}
+    
+    >only {item.tickets} left</Text>
+    </Box>
+    )}
+   </Box>
+   {selectedSlot && (
+        <div>
+          <p>Selected Slot: {selectedSlot}</p>
+          <select value={selectedTickets} onChange={handleDropdownChange}>
+            {[...Array(selectedTickets + 1).keys()].map((count) => (
+              <option key={count} value={count}>
+                {count}
+              </option>
+            ))}
+          </select>
+          <button onClick={() => setSelectedSlot(null)}>Close</button>
+        </div>
+      )}
     </Box></Box></ThemeProvider>
   );
 };
